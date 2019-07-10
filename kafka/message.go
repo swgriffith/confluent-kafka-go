@@ -112,7 +112,7 @@ func (h *handle) newMessageFromFcMsg(fcMsg *C.fetched_c_msg_t) (msg *Message) {
 	if fcMsg.tmphdrsCnt > 0 {
 		msg.Headers = make([]Header, fcMsg.tmphdrsCnt)
 		for n := range msg.Headers {
-			tmphdr := (*[1 << 30]C.tmphdr_t)(unsafe.Pointer(fcMsg.tmphdrs))[n]
+			tmphdr := (*[1 << 15]C.tmphdr_t)(unsafe.Pointer(fcMsg.tmphdrs))[n]
 			msg.Headers[n].Key = C.GoString(tmphdr.key)
 			if tmphdr.val != nil {
 				msg.Headers[n].Value = C.GoBytes(unsafe.Pointer(tmphdr.val), C.int(tmphdr.size))
@@ -182,11 +182,11 @@ func (h *handle) messageToC(msg *Message, cmsg *C.rd_kafka_message_t) {
 	if allocLen > 0 {
 		payload = C.malloc(C.size_t(allocLen))
 		if valueLen > 0 {
-			copy((*[1 << 30]byte)(payload)[0:valueLen], msg.Value)
+			copy((*[1 << 15]byte)(payload)[0:valueLen], msg.Value)
 			valp = payload
 		}
 		if keyLen > 0 {
-			copy((*[1 << 30]byte)(payload)[valueLen:allocLen], msg.Key)
+			copy((*[1 << 15]byte)(payload)[valueLen:allocLen], msg.Key)
 			keyp = unsafe.Pointer(&((*[1 << 31]byte)(payload)[valueLen]))
 		}
 	}
